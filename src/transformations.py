@@ -10,7 +10,7 @@ def clean_orders(df: DataFrame) -> DataFrame:
         )
         .withColumn(
             "amount",
-            F.col("amount").cast("double")
+            F.expr("try_cast(amount AS DOUBLE)")
         )
         .filter(
             F.col("order_date").isNotNull()
