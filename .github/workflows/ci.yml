@@ -39,9 +39,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Add src to Python path
+        run: echo "PYTHONPATH=${GITHUB_WORKSPACE}/src" >> $GITHUB_ENV
+
       - name: Run tests
-        run: |
-          python -m pytest tests/ -v
+        run: python -m pytest tests/ -v
 
   deploy:
     name: Deploy to Databricks Dev
@@ -62,19 +64,16 @@ jobs:
         env:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
-        run: |
-          databricks bundle validate -t dev
+        run: databricks bundle validate -t dev
 
       - name: Deploy bundle
         env:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
-        run: |
-          databricks bundle deploy -t dev
+        run: databricks bundle deploy -t dev
 
       - name: Run Databricks Job
         env:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
-        run: |
-          databricks bundle run orders_pipeline -t dev
+        run: databricks bundle run orders_pipeline -t dev
