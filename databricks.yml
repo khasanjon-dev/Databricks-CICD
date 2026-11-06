@@ -1,0 +1,18 @@
+
+bundle:
+  name: health_data_cicd
+
+include:
+  - recources/*.yml
+
+variables:
+  catalog:
+    description: Unity Catalog name for this environment
+    default: dev
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://dbc-a0541325-6964.cloud.databricks.com
