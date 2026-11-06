@@ -1,5 +1,3 @@
-import sys
-
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import to_date
 
@@ -30,7 +28,7 @@ def main(catalog="dev"):
 
     df = df.withColumn("workout_date", to_date("workout_date"))
 
-    spark.sql(fCREATE SCHEMA IF NOT EXISTS {catalog}.bronze"")
+    spark.sql(f"CREATE SCHEMA IF NOT EXISTS {catalog}.bronze")
 
     (
         df.write
@@ -40,6 +38,7 @@ def main(catalog="dev"):
     )
 
     print(f"Bronze ingestion completed: {catalog}.bronze.workouts")
+
 
 if __name__ == "__main__":
     catalog = "dev"
