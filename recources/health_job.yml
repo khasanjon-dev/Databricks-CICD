@@ -4,17 +4,23 @@ resources:
       name: health_data_job
 
       tasks:
-        - task_key: run_health_pipeline
-
+        - task_key: run_bronze
           spark_python_task:
             python_file: ../src/pipeline/main.py
             parameters:
               - ${var.catalog}
+            environment_key: default
 
+        - task_key: run_silver
+          depends_on:
+            - task_key: run_bronze
+          spark_python_task:
+            python_file: ../src/pipeline/silver.py
+            parameters:
+              - ${var.catalog}
           environment_key: default
-
-      environments:
-        - environment_key: default
-          spec:
-            environment_version: "2"
-            dependencies: []
+    environments:
+      - environment_key: default
+        spec:
+          environment_version: "2"
+          dependencies: []
