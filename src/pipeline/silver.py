@@ -18,7 +18,7 @@ def main(catalog="dev"):
     # Filter invalid records
     df = df.filter(
         (col("duration_minutes") > 0)
-        & (col("calroies") > 0)
+        & (col("calories") > 0)
         & col("workout_type").isin(
             "running", "cycling", "swimming"
         )
