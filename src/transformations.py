@@ -2,47 +2,27 @@ from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
 
-def clean_orders(orders_df: DataFrame) -> DataFrame:
-    """
-    Clean orders:
-    - Convert order_date to DateType
-    - Convert amount to DoubleType
-    - Remove invalid records
-    """
-
-    cleaned_df = (
-        orders_df
-        .withColumn(
+def clean_orders(df: DataFrame) -> DataFrame:
+    return (
+        df.withColumn(
             "order_date",
-            F.to_date("order_date"),
+            F.expr("try_cast(order_date AS DATE)")
         )
         .withColumn(
             "amount",
-            F.col("amount").cast("double"),
+            F.col("amount").cast("double")
+        )
+        .filter(
+            F.col("order_date").isNotNull()
+            & F.col("amount").isNotNull()
+            & (F.col("amount") > 0)
         )
     )
 
-    return cleaned_df.filter(
-        F.col("order_id").isNotNull()
-        & F.col("customer_id").isNotNull()
-        & F.col("order_date").isNotNull()
-        & F.col("amount").isNotNull()
-        & (F.col("amount") > 0)
-    )
 
-
-def calculate_daily_revenue(
-        orders_df: DataFrame,
-) -> DataFrame:
-    """
-    Calculate revenue per day.
-    """
-
+def calculate_daily_revenue(df: DataFrame) -> DataFrame:
     return (
-        orders_df
-        .groupBy("order_date")
-        .agg(
-            F.sum("amount").alias("daily_revenue")
-        )
+        df.groupBy("order_date")
+        .agg(F.sum("amount").alias("daily_revenue"))
         .orderBy("order_date")
     )
