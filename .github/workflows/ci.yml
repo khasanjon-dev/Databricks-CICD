@@ -1,14 +1,22 @@
-name: CI
+name: Orders Pipeline CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - develop
+
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
+      - develop
+
+permissions:
+  contents: read
 
 jobs:
   test:
-    name: Run PySpark tests
+    name: Test PySpark Pipeline
     runs-on: ubuntu-24.04
 
     steps:
@@ -24,7 +32,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: "3.13"
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
@@ -32,4 +40,41 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests
-        run: python -m pytest tests/ -v
+        run: |
+          python -m pytest tests/ -v
+
+  deploy:
+    name: Deploy to Databricks Dev
+    runs-on: ubuntu-24.04
+
+    needs: test
+
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install Databricks CLI
+        uses: databricks/setup-cli@v0.9.0
+
+      - name: Validate bundle
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: |
+          databricks bundle validate -t dev
+
+      - name: Deploy bundle
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: |
+          databricks bundle deploy -t dev
+
+      - name: Run Databricks Job
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: |
+          databricks bundle run orders_pipeline -t dev
