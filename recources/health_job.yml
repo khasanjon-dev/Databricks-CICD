@@ -20,6 +20,16 @@ resources:
             parameters:
               - ${var.catalog}
 
+        - task_key: run_gold
+          depends_on:
+            - task_key: run_silver
+          environment_key: default
+          spark_python_task:
+            python_file: ../src/pipeline/gold.py
+            parameters:
+              - ${var.catalog}
+
+
       environments:
         - environment_key: default
           spec:
